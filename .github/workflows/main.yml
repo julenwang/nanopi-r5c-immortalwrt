@@ -1,0 +1,51 @@
+name: NanoPi-R5C ImmortalWrt Build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 18 * * 3,6'
+
+env:
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-23.05
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Prepare Feeds
+        run: |
+          cp workflows/feeds-nanopi-r5c.conf workflows/feeds.conf.default
+
+      - name: Update Feeds
+        run: |
+          ./scripts/feeds update -a
+
+      - name: Install Feeds
+        run: |
+          ./scripts/feeds install -a
+
+      - name: Build OpenWrt
+        uses: P3TERX/Actions-OpenWrt@v2.9.0
+        with:
+          repository: ${{ env.REPO_URL }}
+          branch: ${{ env.REPO_BRANCH }}
+          commit_message: 'NanoPi R5C Build #${{ github.run_number }}'
+          ssh_key: ${{ secrets.SSH_KEY }}
+          ssh_port: 22
+          config_file: workflows/nanopi-r5c.config
+          feeds_config: workflows/feeds.conf.default
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NanoPi-R5C-ImmortalWrt-${{ github.run_number }}
+          path: |
+            bin/targets/rockchip/armv8/*.img.gz
+            bin/targets/rockchip/armv8/*-sysupgrade.bin
+          retention-days: 7
