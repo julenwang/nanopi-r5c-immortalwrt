@@ -20,7 +20,7 @@ jobs:
 
       - name: Clone ImmortalWrt source
         run: |
-          git clone --depth=1 --branch ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }}
+          git clone --branch ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }}
 
       - name: Prepare config
         run: |
