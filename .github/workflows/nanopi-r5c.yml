@@ -24,7 +24,7 @@ jobs:
         run: ./scripts/feeds install -a
 
       - name: Build OpenWrt
-        uses: P3TERX/Actions-OpenWrt@v2
+        uses: P3TERX/Actions-OpenWrt@decaa5c260535c302a0d59d53b598bb409fd54dd
         with:
           repository: ${{ env.REPO_URL }}
           branch: ${{ env.REPO_BRANCH }}
