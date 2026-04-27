@@ -13,35 +13,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout device configs
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Prepare Feeds
+      - name: Clone ImmortalWrt source
         run: |
-          cp .github/workflows/feeds-nanopi-r5c.conf .github/workflows/feeds.conf.default
+          git clone --depth=1 --branch ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }}
 
-      - name: Check disk space
-        run: df -h
-
-      - name: Update Feeds
+      - name: Prepare config
         run: |
+          cd immortalwrt
+          cp ../.github/workflows/nanopi-r5c.config .config
+          cp ../.github/workflows/feeds-nanopi-r5c.conf feeds.conf.default
+
+      - name: Update feeds
+        run: |
+          cd immortalwrt
           ./scripts/feeds update -a
 
-      - name: Install Feeds
+      - name: Install feeds
         run: |
+          cd immortalwrt
           ./scripts/feeds install -a
 
       - name: Build ImmortalWrt
         run: |
-          make -j$(nproc) V=s BOARD=rockchip TARGET_rockchip/armv8 DEVICE_TARGET=friendlyarm:nanopi-r5c CONFIG_FILE=.github/workflows/nanopi-r5c.config
+          cd immortalwrt
+          make -j$(nproc) V=s
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: NanoPi-R5C-ImmortalWrt-${{ github.run_number }}
           path: |
-            bin/targets/rockchip/armv8/*.img.gz
-            bin/targets/rockchip/armv8/*-sysupgrade.bin
+            immortalwrt/bin/targets/rockchip/armv8/*.img.gz
+            immortalwrt/bin/targets/rockchip/armv8/*-sysupgrade.bin
           retention-days: 7
