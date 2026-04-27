@@ -31,13 +31,11 @@ jobs:
           ./scripts/feeds install -a
 
       - name: Build OpenWrt
-        uses: P3TERX/Actions-OpenWrt@v2.9.0
+        uses: P3TERX/Actions-OpenWrt@v2
         with:
           repository: ${{ env.REPO_URL }}
           branch: ${{ env.REPO_BRANCH }}
           commit_message: 'NanoPi R5C Build #${{ github.run_number }}'
-          ssh_key: ${{ secrets.SSH_KEY }}
-          ssh_port: 22
           config_file: .github/workflows/nanopi-r5c.config
           feeds_config: .github/workflows/feeds.conf.default
 
