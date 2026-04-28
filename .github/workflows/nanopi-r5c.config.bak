@@ -122,7 +122,7 @@ CONFIG_PACKAGE_luci-proto-wireguard=y
 
 # DNS
 CONFIG_PACKAGE_dnsmasq-full=y
-# CONFIG_PACKAGE_dnsmasq=y  # removed - conflicts with dnsmasq-full
+CONFIG_PACKAGE_dnsmasq=y
 
 # System
 CONFIG_PACKAGE_procd=y
@@ -329,7 +329,3 @@ CONFIG_PACKAGE_file=y
 # ==================================================
 #  END OF CONFIG
 # ==================================================
-
-# Exclude problematic packages
-CONFIG_PACKAGE_default-settings=n
-CONFIG_PACKAGE_default-settings-chn=n
