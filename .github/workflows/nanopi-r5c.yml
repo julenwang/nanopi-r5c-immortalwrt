@@ -33,6 +33,12 @@ jobs:
           cp ../.github/workflows/nanopi-r5c.config .config
           cp ../.github/workflows/feeds-nanopi-r5c.conf feeds.conf.default
 
+      - name: Copy custom files (LAN IP 192.168.2.1)
+        run: |
+          cd immortalwrt
+          mkdir -p files/etc/config
+          cp ../files/etc/config/network files/etc/config/network
+
       - name: Update feeds
         run: |
           cd immortalwrt
@@ -42,12 +48,6 @@ jobs:
         run: |
           cd immortalwrt
           ./scripts/feeds install -a
-
-      - name: Patch default LAN IP to 192.168.2.1
-        run: |
-          cd immortalwrt
-          sed -i 's/192\.168\.1\.1/192.168.2.1/g' target/linux/rockchip/armv8/base-files/etc/board.d/02_network
-          grep -i "192.168" target/linux/rockchip/armv8/base-files/etc/board.d/02_network
 
       - name: Build ImmortalWrt
         run: |
