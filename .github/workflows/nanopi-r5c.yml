@@ -50,14 +50,7 @@ jobs:
           mkdir -p files/etc/config
           cp ../files/etc/config/network files/etc/config/network
 
-      - name: Step 4 - Download package source code
-        run: |
-          cd immortalwrt
-          make download -j8
-          find dl -size -1024c -exec ls -l {} \;
-          find dl -size -1024c -exec rm -f {} \;
-
-      - name: Step 5 - Pre-flight Check
+      - name: Step 4 - Pre-flight Check 1
         run: |
           cd immortalwrt
           echo -e "\n========================================================"
@@ -71,7 +64,28 @@ jobs:
           grep -i "tailscale" .config || echo "未找到 Tailscale"
           echo "========================================================\n"
 
-      - name: Step 6 - Build ImmortalWrt
+      - name: Step 5 - Download package source code
+        run: |
+          cd immortalwrt
+          make download -j8
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+
+      - name: Step 6 - Pre-flight Check 2
+        run: |
+          cd immortalwrt
+          echo -e "\n========================================================"
+          echo -e "📄 现在的 .config 行数：\033[32m $(wc -l < .config) 行 \033[0m"
+          echo -e "\n🔎 核心插件搜索测试："
+          echo "Docker 相关："
+          grep -i "docker" .config || echo "未找到 Docker"
+          echo "OpenClash 相关："
+          grep -i "openclash" .config || echo "未找到 OpenClash"
+          echo "Tailscale 相关："
+          grep -i "tailscale" .config || echo "未找到 Tailscale"
+          echo "========================================================\n"
+
+      - name: Step 7 - Build ImmortalWrt
         run: |
           cd immortalwrt
           make -j$(nproc) V=s
