@@ -1,21 +1,9 @@
-name: NanoPi-R5C ImmortalWrt Build
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 18 * * 3,6'
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-23.05
-
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout device configs
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4 # 降级回 v4 稳定版
         with:
           ref: main
 
@@ -27,47 +15,57 @@ jobs:
         run: |
           git clone --branch ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }}
 
-      - name: Prepare config
+      - name: Step 1 - Prepare and Install Feeds (先买菜)
         run: |
           cd immortalwrt
-          cp ../.github/workflows/nanopi-r5c.config .config
+          # 1. 先注入软件源列表
           cp ../.github/workflows/feeds-nanopi-r5c.conf feeds.conf.default
+          # 2. 根据列表去全网拉取源码
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
-      - name: Copy custom files (LAN IP 172.31.31.205)
+      - name: Step 2 - Prepare Config and Expand (后下饭)
+        run: |
+          cd immortalwrt
+          # 1. 此时所有的插件源码已就绪，再注入你的定制点菜单
+          cp ../.github/workflows/nanopi-r5c.config .config
+          # 2. 展开配置，完美抓取 Docker 和 OpenClash 的依赖
+          make defconfig
+
+      - name: Step 3 - Copy custom network files
         run: |
           cd immortalwrt
           mkdir -p files/etc/config
           cp ../files/etc/config/network files/etc/config/network
 
-      - name: Update feeds
-        run: |
-          cd immortalwrt
-          ./scripts/feeds update -a
-
-      - name: Install feeds
-        run: |
-          cd immortalwrt
-          ./scripts/feeds install -a
-
-      - name: Expand configuration (make defconfig)
-        run: |
-          cd immortalwrt
-          make defconfig
-
-      - name: Download package source code
+      - name: Step 4 - Download package source code
         run: |
           cd immortalwrt
           make download -j8
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
 
-      - name: Build ImmortalWrt
+      - name: Step 5 - Pre-flight Check
+        run: |
+          cd immortalwrt
+          echo -e "\n========================================================"
+          echo -e "📄 现在的 .config 行数：\033[32m $(wc -l < .config) 行 \033[0m"
+          echo -e "\n🔎 核心插件搜索测试："
+          echo "Docker 相关："
+          grep -i "docker" .config || echo "未找到 Docker"
+          echo "OpenClash 相关："
+          grep -i "openclash" .config || echo "未找到 OpenClash"
+          echo "Tailscale 相关："
+          grep -i "tailscale" .config || echo "未找到 Tailscale"
+          echo "========================================================\n"
+
+      - name: Step 6 - Build ImmortalWrt
         run: |
           cd immortalwrt
           make -j$(nproc) V=s
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4 # 降级回 v4 稳定版
         with:
           name: NanoPi-R5C-ImmortalWrt-${{ github.run_number }}
           path: |
