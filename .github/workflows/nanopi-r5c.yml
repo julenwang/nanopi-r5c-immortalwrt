@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout device configs
         uses: actions/checkout@v5
@@ -21,8 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pyelftools
+          sudo bash -c 'bash <(curl -s https://build-scripts.immortalwrt.org/init_build_environment.sh)'
 
       - name: Clone ImmortalWrt source
         run: |
@@ -34,7 +33,7 @@ jobs:
           cp ../.github/workflows/nanopi-r5c.config .config
           cp ../.github/workflows/feeds-nanopi-r5c.conf feeds.conf.default
 
-      - name: Copy custom files (LAN IP 192.168.2.1)
+      - name: Copy custom files (LAN IP 172.31.31.205)
         run: |
           cd immortalwrt
           mkdir -p files/etc/config
@@ -49,6 +48,18 @@ jobs:
         run: |
           cd immortalwrt
           ./scripts/feeds install -a
+
+      - name: Expand configuration (make defconfig)
+        run: |
+          cd immortalwrt
+          make defconfig
+
+      - name: Download package source code
+        run: |
+          cd immortalwrt
+          make download -j8
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
 
       - name: Build ImmortalWrt
         run: |
