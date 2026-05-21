@@ -1,3 +1,15 @@
+name: NanoPi-R5C ImmortalWrt Build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 18 * * 3,6'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-23.05
+
 jobs:
   build:
     runs-on: ubuntu-22.04
