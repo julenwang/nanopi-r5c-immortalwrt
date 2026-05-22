@@ -8,7 +8,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-23.05
+  REPO_TAG: v23.05.7
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Clone ImmortalWrt source
         run: |
-          git clone --branch ${{ env.REPO_BRANCH }} ${{ env.REPO_URL }}
+          git clone -b ${{ env.REPO_TAG }} --depth 1  ${{ env.REPO_URL }}
 
       - name: Step 1 - Prepare and Install Feeds (先买菜)
         run: |
